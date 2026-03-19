@@ -21,16 +21,37 @@ export async function makeApiRequest<T>(
     throw new Error("API key not configured. Set NEPTIME_API_KEY environment variable.");
   }
 
+  // Add api_key to params (API expects it as query parameter)
+  const requestParams = {
+    ...params,
+    api_key: apiKey
+  };
+
+  // For POST/PUT requests, convert data to URL-encoded form data
+  let requestData = data;
+  let contentType = "application/json";
+  
+  if ((method === "POST" || method === "PUT") && data && typeof data === "object") {
+    // Convert object to URL-encoded string
+    const formData = new URLSearchParams();
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    }
+    requestData = formData.toString();
+    contentType = "application/x-www-form-urlencoded";
+  }
+
   const response = await axios({
     method,
     url: `${API_BASE_URL}/${endpoint}`,
-    data,
-    params,
+    data: requestData,
+    params: requestParams,
     timeout: 30000,
     headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-      "X-API-Key": apiKey
+      "Content-Type": contentType,
+      "Accept": "application/json"
     }
   });
   return response.data;
