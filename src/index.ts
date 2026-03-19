@@ -21,7 +21,7 @@ import { registerUploadTools } from "./tools/uploads.js";
 
 const server = new McpServer({
   name: "neptime-mcp-server",
-  version: "1.1.0"
+  version: "1.1.1"
 });
 
 // Register all tools

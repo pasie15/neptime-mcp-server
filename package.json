@@ -1,6 +1,6 @@
 {
   "name": "neptime-mcp-server",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "MCP server for Neptime.io API - Video platform API integration",
   "type": "module",
   "main": "dist/index.js",
