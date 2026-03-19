@@ -17,10 +17,11 @@ import { registerArticleTools } from "./tools/articles.js";
 import { registerHistoryTools } from "./tools/history.js";
 import { registerCategoryTools } from "./tools/categories.js";
 import { registerReportTools } from "./tools/reports.js";
+import { registerUploadTools } from "./tools/uploads.js";
 
 const server = new McpServer({
   name: "neptime-mcp-server",
-  version: "1.0.0"
+  version: "1.1.0"
 });
 
 // Register all tools
@@ -32,6 +33,7 @@ registerArticleTools(server);
 registerHistoryTools(server);
 registerCategoryTools(server);
 registerReportTools(server);
+registerUploadTools(server);
 
 async function main(): Promise<void> {
   const apiKey = process.env.NEPTIME_API_KEY;

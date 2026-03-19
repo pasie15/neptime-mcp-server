@@ -4,13 +4,18 @@ MCP (Model Context Protocol) server for [Neptime.io](https://neptime.io) video p
 
 ## Features
 
-This MCP server provides 35+ tools for interacting with the Neptime.io API:
+This MCP server provides 40+ tools for interacting with the Neptime.io API:
 
 ### Videos
 - List, search, and get trending videos
 - Get video details
 - Update and delete your videos
 - Rate videos (like/dislike)
+
+### Video Uploads (NEW in v1.1.0)
+- Chunked upload for large files (up to 10GB for pro users, 1GB for free)
+- Bypasses Cloudflare's 100MB limit with 50MB chunks
+- Upload progress tracking
 
 ### Channels
 - Get channel information
@@ -146,6 +151,10 @@ Or if installed globally:
 | `neptime_get_categories` | Get all categories |
 | `neptime_get_category_videos` | Get videos in a category |
 | `neptime_report_video` | Report a video |
+| `neptime_init_chunked_upload` | Initialize chunked upload session |
+| `neptime_upload_chunk` | Upload a video chunk |
+| `neptime_complete_chunked_upload` | Complete upload and create video |
+| `neptime_get_upload_status` | Check upload progress |
 
 ## Rate Limits
 
