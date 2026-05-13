@@ -37,6 +37,10 @@ const DeleteVideoSchema = z.object({
   video_id: z.string().min(1).describe("Video ID to delete")
 }).strict();
 
+export function isVideoNotFoundMessage(message: string): boolean {
+  return message.includes("VIDEO_NOT_FOUND") || message.toLowerCase().includes("video not found");
+}
+
 export function registerVideoTools(server: McpServer): void {
   
   server.registerTool(
@@ -256,6 +260,24 @@ Returns: Confirmation of deletion.`,
           structuredContent: data
         };
       } catch (error) {
+        try {
+          await makeApiRequest<{ success: boolean; data: unknown }>(
+            `videos/${params.video_id}`,
+            "GET"
+          );
+        } catch (verifyError) {
+          const verificationMessage = handleApiError(verifyError);
+          if (isVideoNotFoundMessage(verificationMessage)) {
+            const data = {
+              success: true,
+              message: "Video deleted. Neptime returned an error from DELETE, but a follow-up lookup confirmed the video is no longer available."
+            };
+            return {
+              content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+              structuredContent: data
+            };
+          }
+        }
         return { content: [{ type: "text", text: handleApiError(error) }] };
       }
     }

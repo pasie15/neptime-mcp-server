@@ -5,7 +5,11 @@
 
 import axios from 'axios';
 
-const API_KEY = 'a523b8a764910fc4d5689d3ba5820bb2be3a191d9f2f1d627b989c68220c8cf3';
+const API_KEY = process.env.NEPTIME_API_KEY;
+if (!API_KEY) {
+  console.error('Set NEPTIME_API_KEY before running this script.');
+  process.exit(1);
+}
 const BASE_URL = 'https://neptime.io/public_api/v1';
 
 const api = axios.create({
@@ -59,13 +63,6 @@ async function runTests() {
   // Article endpoints
   results.push(await testEndpoint('List Articles', 'GET', '/articles', null, { limit: 2 }));
   results.push(await testEndpoint('Get Article', 'GET', '/articles/21'));
-  
-  // Chunked upload endpoints
-  results.push(await testEndpoint('Init Chunked Upload', 'POST', '/videos/chunked/init', {
-    filename: 'test_video.mp4',
-    filesize: 104857600,
-    chunks: 2
-  }));
   
   // Summary
   console.log('\n\n========== TEST SUMMARY ==========');

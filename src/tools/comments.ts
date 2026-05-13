@@ -9,8 +9,20 @@ const GetVideoCommentsSchema = z.object({
   sort: z.enum(["newest", "oldest", "top"]).default("newest").describe("Sort order")
 }).strict();
 
+const GetArticleCommentsSchema = z.object({
+  article_id: z.number().int().positive().describe("Article ID"),
+  limit: z.number().int().min(1).max(100).default(20).describe("Max results"),
+  offset: z.number().int().min(0).default(0).describe("Pagination offset"),
+  sort: z.enum(["newest", "oldest", "top"]).default("newest").describe("Sort order")
+}).strict();
+
 const CreateVideoCommentSchema = z.object({
   video_id: z.string().min(1).describe("Video ID"),
+  text: z.string().min(1).max(2000).describe("Comment text (max 2000 chars)")
+}).strict();
+
+const CreateArticleCommentSchema = z.object({
+  article_id: z.number().int().positive().describe("Article ID"),
   text: z.string().min(1).max(2000).describe("Comment text (max 2000 chars)")
 }).strict();
 
@@ -22,6 +34,10 @@ const RateCommentSchema = z.object({
   comment_id: z.number().int().positive().describe("Comment ID"),
   rating: z.enum(["like", "dislike", "none"]).describe("Rating action")
 }).strict();
+
+export function articleCommentsEndpoint(articleId: number): string {
+  return `articles/${articleId}/comments`;
+}
 
 export function registerCommentTools(server: McpServer): void {
 
@@ -65,6 +81,45 @@ Returns: Array of comments with user info, text, likes, replies.`,
   );
 
   server.registerTool(
+    "neptime_get_article_comments",
+    {
+      title: "Get Article Comments",
+      description: `Get comments on an article.
+
+Args:
+  - article_id: Article ID (required)
+  - limit: Max results 1-100 (default: 20)
+  - offset: Pagination offset (default: 0)
+  - sort: Sort order - newest, oldest, top (default: newest)
+
+Returns: Array of comments with user info, text, likes, replies.`,
+      inputSchema: GetArticleCommentsSchema,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false
+      }
+    },
+    async (params: z.infer<typeof GetArticleCommentsSchema>) => {
+      try {
+        const data = await makeApiRequest<{ success: boolean; data: unknown[] }>(
+          articleCommentsEndpoint(params.article_id),
+          "GET",
+          undefined,
+          { limit: params.limit, offset: params.offset, sort: params.sort }
+        );
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+          structuredContent: data
+        };
+      } catch (error) {
+        return { content: [{ type: "text", text: handleApiError(error) }] };
+      }
+    }
+  );
+
+  server.registerTool(
     "neptime_create_video_comment",
     {
       title: "Create Video Comment",
@@ -87,6 +142,42 @@ Returns: Created comment object.`,
       try {
         const data = await makeApiRequest<{ success: boolean; data: unknown }>(
           `videos/${params.video_id}/comments`,
+          "POST",
+          { text: params.text }
+        );
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+          structuredContent: data
+        };
+      } catch (error) {
+        return { content: [{ type: "text", text: handleApiError(error) }] };
+      }
+    }
+  );
+
+  server.registerTool(
+    "neptime_create_article_comment",
+    {
+      title: "Create Article Comment",
+      description: `Post a comment on an article. Limit: 50 comments/day, 10s between posts.
+
+Args:
+  - article_id: Article ID (required)
+  - text: Comment text, max 2000 chars (required)
+
+Returns: Created comment object.`,
+      inputSchema: CreateArticleCommentSchema,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: false
+      }
+    },
+    async (params: z.infer<typeof CreateArticleCommentSchema>) => {
+      try {
+        const data = await makeApiRequest<{ success: boolean; data: unknown }>(
+          articleCommentsEndpoint(params.article_id),
           "POST",
           { text: params.text }
         );

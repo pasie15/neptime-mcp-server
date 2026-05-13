@@ -11,6 +11,26 @@ export function getApiKey(): string | undefined {
   return apiKey;
 }
 
+export function prepareRequestBody(data?: unknown): { data: unknown; contentType?: string } {
+  if (data === undefined || data === null) return { data };
+  if (typeof FormData !== "undefined" && data instanceof FormData) {
+    return { data };
+  }
+  if (typeof data === "object") {
+    return { data, contentType: "application/json" };
+  }
+  return { data };
+}
+
+export function assertSuccessfulApiResponse<T>(data: T): T {
+  if (data && typeof data === "object" && "success" in data && data.success === false) {
+    const error = (data as { error?: { code?: string; message?: string } }).error;
+    const code = error?.code ? `${error.code}: ` : "";
+    throw new Error(`${code}${error?.message || "Neptime API returned success=false"}`);
+  }
+  return data;
+}
+
 export async function makeApiRequest<T>(
   endpoint: string,
   method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
@@ -27,34 +47,21 @@ export async function makeApiRequest<T>(
     api_key: apiKey
   };
 
-  // For POST/PUT requests, convert data to URL-encoded form data
-  let requestData = data;
-  let contentType = "application/json";
-  
-  if ((method === "POST" || method === "PUT") && data && typeof data === "object") {
-    // Convert object to URL-encoded string
-    const formData = new URLSearchParams();
-    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
-      if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    }
-    requestData = formData.toString();
-    contentType = "application/x-www-form-urlencoded";
-  }
+  const prepared = prepareRequestBody(data);
+  const headers: Record<string, string> = {
+    "Accept": "application/json"
+  };
+  if (prepared.contentType) headers["Content-Type"] = prepared.contentType;
 
   const response = await axios({
     method,
     url: `${API_BASE_URL}/${endpoint}`,
-    data: requestData,
+    data: prepared.data,
     params: requestParams,
     timeout: 30000,
-    headers: {
-      "Content-Type": contentType,
-      "Accept": "application/json"
-    }
+    headers
   });
-  return response.data;
+  return assertSuccessfulApiResponse(response.data);
 }
 
 export function handleApiError(error: unknown): string {
@@ -71,7 +78,7 @@ export function handleApiError(error: unknown): string {
         case 403:
           return "Error: Permission denied. Your API key doesn't have access to this resource.";
         case 404:
-          return "Error: Resource not found. Please check the ID is correct.";
+          return `Error: ${data?.error?.code || "Resource not found"} - ${data?.error?.message || "Please check the ID is correct."}`;
         case 429:
           return "Error: Rate limit exceeded. Please wait before making more requests.";
         default:

@@ -4,7 +4,7 @@ MCP (Model Context Protocol) server for [Neptime.io](https://neptime.io) video p
 
 ## Features
 
-This MCP server provides 40+ tools for interacting with the Neptime.io API:
+This MCP server provides 39 tools for interacting with the Neptime.io API:
 
 ### Videos
 - List, search, and get trending videos
@@ -12,10 +12,10 @@ This MCP server provides 40+ tools for interacting with the Neptime.io API:
 - Update and delete your videos
 - Rate videos (like/dislike)
 
-### Video Uploads (NEW in v1.1.0)
-- Chunked upload for large files (up to 10GB for pro users, 1GB for free)
-- Bypasses Cloudflare's 100MB limit with 50MB chunks
-- Upload progress tracking
+### Video Uploads
+- Upload videos through Neptime.io's live multipart upload endpoint
+- Supports local file paths or base64-encoded video bytes
+- Optional thumbnail, category, privacy, age restriction, and short-form flags
 
 ### Channels
 - Get channel information
@@ -31,6 +31,7 @@ This MCP server provides 40+ tools for interacting with the Neptime.io API:
 ### Comments
 - Get video comments
 - Post comments on videos
+- Get and post article comments when supported by the Neptime API
 - Delete your comments
 - Rate comments
 
@@ -135,7 +136,9 @@ Or if installed globally:
 | `neptime_add_video_to_playlist` | Add video to playlist |
 | `neptime_remove_video_from_playlist` | Remove video from playlist |
 | `neptime_get_video_comments` | Get comments on a video |
-| `neptime_create_video_comment` | Post a comment |
+| `neptime_get_article_comments` | Get comments on an article |
+| `neptime_create_video_comment` | Post a video comment |
+| `neptime_create_article_comment` | Post an article comment |
 | `neptime_delete_comment` | Delete your comment |
 | `neptime_rate_comment` | Like or dislike a comment |
 | `neptime_list_articles` | List articles |
@@ -151,10 +154,7 @@ Or if installed globally:
 | `neptime_get_categories` | Get all categories |
 | `neptime_get_category_videos` | Get videos in a category |
 | `neptime_report_video` | Report a video |
-| `neptime_init_chunked_upload` | Initialize chunked upload session |
-| `neptime_upload_chunk` | Upload a video chunk |
-| `neptime_complete_chunked_upload` | Complete upload and create video |
-| `neptime_get_upload_status` | Check upload progress |
+| `neptime_upload_video` | Upload a video using a local path or base64 payload |
 
 ## Rate Limits
 
@@ -169,7 +169,7 @@ The Neptime API has the following rate limits:
 
 ```bash
 # Clone the repository
-git clone https://github.com/niceptime/neptime-mcp-server.git
+git clone https://github.com/pasie15/neptime-mcp-server.git
 cd neptime-mcp-server
 
 # Install dependencies
@@ -177,6 +177,9 @@ npm install
 
 # Build
 npm run build
+
+# Unit tests
+npm test
 
 # Run in development mode
 npm run dev

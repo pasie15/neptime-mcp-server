@@ -35,6 +35,21 @@ const RemoveVideoFromPlaylistSchema = z.object({
   video_id: z.string().min(1).describe("Video ID to remove")
 }).strict();
 
+export function findPlaylistById(response: unknown, listId: string): unknown | null {
+  const data = response && typeof response === "object" && "data" in response
+    ? (response as { data?: unknown }).data
+    : null;
+  if (!Array.isArray(data)) return null;
+  return data.find(item => (
+    item &&
+    typeof item === "object" &&
+    (
+      ("list_id" in item && String((item as { list_id?: unknown }).list_id) === listId) ||
+      ("id" in item && String((item as { id?: unknown }).id) === listId)
+    )
+  )) ?? null;
+}
+
 export function registerPlaylistTools(server: McpServer): void {
 
   server.registerTool(
@@ -97,6 +112,22 @@ Returns: Playlist object with videos array.`,
           structuredContent: data
         };
       } catch (error) {
+        try {
+          const listData = await makeApiRequest<{ success: boolean; data: unknown[] }>(
+            "playlists",
+            "GET"
+          );
+          const playlist = findPlaylistById(listData, params.list_id);
+          if (playlist) {
+            const data = { success: true, data: playlist };
+            return {
+              content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+              structuredContent: data
+            };
+          }
+        } catch {
+          // Preserve the original direct endpoint error below.
+        }
         return { content: [{ type: "text", text: handleApiError(error) }] };
       }
     }

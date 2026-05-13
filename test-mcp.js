@@ -5,7 +5,11 @@
 
 import { setApiKey, makeApiRequest } from './dist/services/api.js';
 
-const API_KEY = 'a523b8a764910fc4d5689d3ba5820bb2be3a191d9f2f1d627b989c68220c8cf3';
+const API_KEY = process.env.NEPTIME_API_KEY;
+if (!API_KEY) {
+  console.error('Set NEPTIME_API_KEY before running this script.');
+  process.exit(1);
+}
 
 async function test(name, fn) {
   console.log(`\n=== ${name} ===`);
@@ -43,13 +47,6 @@ async function runTests() {
   // Test article endpoints
   if (await test('List Articles', () => makeApiRequest('articles', 'GET', undefined, { limit: 2 }))) passed++; else failed++;
   if (await test('Get Article', () => makeApiRequest('articles/21', 'GET'))) passed++; else failed++;
-  
-  // Test chunked upload init
-  if (await test('Init Chunked Upload', () => makeApiRequest('videos/chunked/init', 'POST', {
-    filename: 'test_video.mp4',
-    filesize: 104857600,
-    chunks: 2
-  }))) passed++; else failed++;
   
   console.log('\n\n========== TEST SUMMARY ==========');
   console.log(`Passed: ${passed}/${passed + failed}`);
