@@ -35,7 +35,8 @@ export async function makeApiRequest<T>(
   endpoint: string,
   method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
   data?: unknown,
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
+  timeoutMs = 30000
 ): Promise<T> {
   if (!apiKey) {
     throw new Error("API key not configured. Set NEPTIME_API_KEY environment variable.");
@@ -58,8 +59,10 @@ export async function makeApiRequest<T>(
     url: `${API_BASE_URL}/${endpoint}`,
     data: prepared.data,
     params: requestParams,
-    timeout: 30000,
-    headers
+    timeout: timeoutMs,
+    headers,
+    maxBodyLength: Infinity,
+    maxContentLength: Infinity
   });
   return assertSuccessfulApiResponse(response.data);
 }

@@ -109,11 +109,13 @@ Returns: Uploaded video object with video_id, URL, stream URL, thumbnail, approv
     },
     async (params: UploadVideoInput) => {
       try {
-        const data = await makeApiRequest<{ success: boolean; data: unknown }>(
-          "videos/upload",
-          "POST",
-          buildVideoUploadForm(params)
-        );
+      const data = await makeApiRequest<{ success: boolean; data: unknown }>(
+        "videos/upload",
+        "POST",
+        buildVideoUploadForm(params),
+        undefined,
+        300000
+      );
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
           structuredContent: data
