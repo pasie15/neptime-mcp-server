@@ -3,7 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { makeApiRequest, handleApiError } from "../services/api.js";
 
 const LookupSchema = z.object({
-  type: z.enum(["search", "channel", "playlist", "videos"]).describe("YouTube lookup type"),
+  type: z.enum(["search", "channel", "playlist", "videos", "video_details"]).describe("YouTube lookup type. Use video_details for duration/shorts detection."),
   q: z.string().optional().describe("Search query when type=search"),
   channel_id: z.string().optional().describe("YouTube channel ID when type=channel"),
   playlist_id: z.string().optional().describe("Playlist ID when type=playlist"),
