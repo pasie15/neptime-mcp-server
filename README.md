@@ -4,7 +4,7 @@ MCP (Model Context Protocol) server for [Neptime.io](https://neptime.io) video p
 
 ## Features
 
-This MCP server provides 39 tools for interacting with the Neptime.io API:
+This MCP server provides 43 tools for interacting with the Neptime.io API:
 
 ### Videos
 - List, search, and get trending videos
@@ -16,10 +16,14 @@ This MCP server provides 39 tools for interacting with the Neptime.io API:
 - Upload videos through Neptime.io's live multipart upload endpoint
 - Supports local file paths or base64-encoded video bytes
 - Optional thumbnail, category, privacy, age restriction, and short-form flags
+- Import existing YouTube videos or Shorts onto the authenticated channel
+- Look up YouTube channels, playlists, and durations for newest-to-oldest backfills
 
 ### Channels
 - Get channel information
 - Get channel videos
+- Read and update the authenticated channel profile
+- Set channel about text, avatar, and banner
 - Subscribe/unsubscribe from channels
 - View your subscriptions
 
@@ -155,6 +159,10 @@ Or if installed globally:
 | `neptime_get_category_videos` | Get videos in a category |
 | `neptime_report_video` | Report a video |
 | `neptime_upload_video` | Upload a video using a local path or base64 payload |
+| `neptime_youtube_lookup` | Look up YouTube channels, playlists, search, or video details |
+| `neptime_import_youtube_video` | Import a YouTube video or Short onto the authenticated channel |
+| `neptime_get_my_channel` | Get the authenticated channel profile |
+| `neptime_update_my_channel` | Update channel about text, avatar, and banner |
 
 ## Rate Limits
 
